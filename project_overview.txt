@@ -1,0 +1,87 @@
+Project Overview: Secure Address Book Web Application
+
+We are building a Java Spring Boot web application that allows users to register, authenticate, and securely manage their own personal address book contacts. 
+
+Key Features & Functionality:
+
+1. User Authentication & Security:
+   - User Signup & Login: Custom user registration system (MyAppUser).
+   - Email Verification: When a user signs up, the system generates a JSON Web Token (JWT) and uses an EmailService to send a verification link to their email address. Users must verify their email before they can fully access the system.
+   - Security: Passwords are encrypted using Spring Security's PasswordEncoder (likely BCrypt), and JWTs are used for secure operations. 
+
+2. Address Book Management:
+   - Authenticated users have access to a personal address book (/address-book).
+   - Contacts (AddressBookContact) are linked specifically to the user who created them (via a userId mapping). Each contact stores a name, email, and contact information.
+
+3. Frontend Views:
+   - The application uses Thymeleaf templates to render the user interface server-side, serving pages like Home (/), Profile (/profile), Login (/login), and Signup (/signup).
+
+Tech Stack:
+- Backend: Java 17, Spring Boot 4.x (Web, Security, Mail)
+- Database: PostgreSQL with Spring Data JPA for object-relational mapping.
+- Frontend Pages: Thymeleaf template engine.
+- Dependencies/Tools: Lombok (for boilerplate code reduction), JWT (for tokens), and Maven (for build/dependency management).
+
+=== Application Constraints & Security Rules ===
+
+1. Authentication Rules:
+   - Users cannot access protected routes (`/`, `/profile`, `/address-book`) without being authenticated.
+   - Trying to access protected pages will automatically redirect the user to the `/login` page.
+   - `MyAppUser` accounts are blocked from logging in until they have successfully verified their email via the JWT sent during registration.
+
+2. Data Privacy Constraints:
+   - AddressBookContacts are strictly isolated per user using the `userId` field. 
+   - User A cannot view, edit, or access AddressBookContacts created by User B.
+   - All passwords must be securely hashed via BCrypt before being persisted to the PostgreSQL database.
+
+3. Input Constraints (Backend Models):
+   - User registration requires an email, password, and username.
+   - Email addresses must be unique. The system explicitly blocks registration if an email is already associated with an account in the system (returning a 400 Bad Request if the account is verified, or resending the link if it is not).
+
+=== Inputs & Outputs ===
+
+Primary Inputs:
+1. Registration Payload: `username`, `email`, `password` (and optional profile fields like `dateOfBirth`, `address`, `preferences`, etc.).
+2. Login Payload: Form-data containing `username`/`email` and `password`.
+3. Contact Creation Payload: `name`, `email`, `contactInformation` for new entries in the address book.
+4. Security/Verification Tokens: JWT parameters passed within URLs for verifying newly registered accounts.
+
+Primary Outputs:
+1. Thymeleaf UI Renderings: HTML pages populated with model attributes (e.g., passing a list of `contacts` to the `address-book` view).
+2. Registration Feedback: ResponseEntity Strings confirming registration success ("Registration successful! Please Verify your Email") or failures ("User Already exist and Verified.").
+3. User State Sessions: The authenticated security context managed by Spring Security, which persists the `Principal` for the duration of a valid login session.
+
+=== High-Level System Test Cases ===
+
+Here are some core testing scenarios that should be validated for this application:
+
+Test Case 1: Account Registration & Uniqueness Constraint
+- Description: Ensure a new user can register and that duplicate emails are properly handled.
+- Action: Submit a POST request to `/signup` with a new, valid payload.
+- Expected Result: System creates a `MyAppUser` record, generates a JWT verification token, and sends it via email. Returns a 200 OK status.
+- Action (Duplicate): Submit the identical POST request to `/signup`.
+- Expected Result: System identifies the pre-existing user. If verified, returns 400 Bad Request. If unverified, it resends the email token.
+
+Test Case 2: Authentication & Route Protection
+- Description: Verify that protected routes are shielded behind the login wall.
+- Action: Unauthenticated user attempts to perform a GET request to `/profile` or `/address-book`.
+- Expected Result: User is automatically redirected to `/login` (Managed by Spring Security `SecurityFilterChain`).
+
+Test Case 3: Data Isolation between Users
+- Description: Guarantee that User A's contacts cannot be viewed by User B.
+- Prerequisites: User A has 2 contacts. User B has 0 contacts.
+- Action: Authenticate as User B. Navigate to `/address-book`. 
+- Expected Result: The displayed contacts model must be completely empty. The backend query (`contactRepository.findByUserId(userB.getId())`) should fetch 0 records, effectively isolating User A's data.
+
+Test Case 4: Email Verification Flow
+- Description: Ensure the application blocks logins for unverified users and successfully processes JWT verifications.
+- Action: Newly registered (but unverified) user attempts to log in.
+- Expected Result: Login fails entirely or an explicit authorization error is thrown.
+- Action: User clicks the verification link (supplying the valid JWT).
+- Expected Result: Backend validates the signature of the JWT using `JwtTokenUtil`, maps it to the `MyAppUser` record, updates the user's `isVerified` flag to `true`, and persists it to the database. User can now successfully log in.
+
+=== Pending / WIP Features ===
+
+1. Wallet Functionality
+   - State: Incomplete / Placeholder.
+   - Details: The `MyAppUser` entity has a `walletBalance` field and it is displayed as read-only text on the profile and home pages. However, there are currently no controllers, endpoints, or backend logic to actually manage funds (e.g., adding money, withdrawing, transferring, or viewing transaction history).

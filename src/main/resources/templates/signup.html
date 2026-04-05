@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Signup Form</title>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <section>
+    <form onsubmit="return false;">
+      <h1>Sign Up</h1>
+      <div class="inputbox">
+        <ion-icon name="person-outline"></ion-icon>
+        <input type="text" id="username" name="username" required>
+        <label for="">Name</label>
+      </div>
+      <div class="inputbox">
+        <ion-icon name="mail-outline"></ion-icon>
+        <input type="email" id="email" name="email" required>
+        <label for="">Email</label>
+      </div>
+
+      <div class="inputbox">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <input type="password" id="password" name="password" required>
+        <label for="">Password</label>
+      </div>
+      <div class="inputbox">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <input type="password" id="passwordcon" name="passwordcon" required>
+        <label for="">Confirm Password</label>
+      </div>
+      <button id="submit" type="button" onclick="submitSignup()">Sign Up</button>
+      <div class="register">
+        <p>Already have an account? <a href="/login">Log In</a></p>
+      </div>
+    </form>
+  </section>
+
+  <script>
+    function submitSignup() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('passwordcon').value;
+      const email = document.getElementById('email').value;
+
+      if (!username || !email || !password) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      if (password === confirmPassword) {
+        fetch('/signup', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            [document.querySelector('meta[name="_csrf_header"]').getAttribute('content')]: document.querySelector('meta[name="_csrf"]').getAttribute('content')
+          },
+          body: JSON.stringify({ username, email, password })
+        })
+          .then(response => {
+            if (response.ok) {
+              window.location.href = '/login?registered=true';
+            } else {
+              response.text().then(text => alert(text));
+            }
+          })
+          .catch(err => alert("Error during signup"));
+      } else {
+        alert("Passwords do not match");
+      }
+    }
+  </script>
+</body>
+
+</html>

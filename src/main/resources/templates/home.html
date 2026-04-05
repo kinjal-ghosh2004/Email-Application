@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Email Application</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .header { display: flex; justify-content: space-between; padding: 20px; background: rgba(47, 1, 71, 0.8); border-bottom: 2px solid var(--soft-periwinkle); width: 100vw; box-sizing: border-box; position: absolute; top: 0; left: 0; backdrop-filter: blur(10px); }
+        .header a { color: var(--ghost-white); text-decoration: none; margin: 0 10px; font-weight: 600; padding: 5px 10px; border-radius: 5px; transition: background 0.3s; }
+        .header a:hover { background: var(--indigo); }
+        .content { margin-top: 100px; padding: 50px; text-align: center; color: var(--ghost-white); width: 100%; box-sizing: border-box;}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            Welcome, <span th:text="${user.username}" style="font-weight: 800; color: var(--soft-periwinkle);">User</span>
+        </div>
+        <div>
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+            <a href="/address-book">Address Book</a>
+            <a href="/email">Email Mode</a>
+            <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+            <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;"></form>
+        </div>
+    </div>
+    
+    <div class="content">
+        <h1 style="font-size: 3rem; margin-bottom: 10px;">Welcome to Email Application App</h1>
+        <p style="font-size: 1.2rem; background: rgba(9, 12, 2, 0.5); padding: 15px; border-radius: 10px; display: inline-block; border: 1px solid var(--soft-periwinkle); backdrop-filter: blur(10px);">
+            Your wallet balance is: <strong style="color: var(--soft-periwinkle);">$<span th:text="${user.walletBalance}">0.0</span></strong>
+        </p>
+    </div>
+</body>
+</html>

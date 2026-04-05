@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Details - Email Application</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background: var(--gradient-bg);
+            background-size: cover;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--ghost-white);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(47, 1, 71, 0.8);
+            border-bottom: 2px solid var(--soft-periwinkle);
+            backdrop-filter: blur(10px);
+            width: 100vw;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .header a {
+            color: var(--ghost-white);
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .header a:hover {
+            background: var(--indigo);
+        }
+
+        .container {
+            margin-top: 100px;
+            padding: 40px;
+            background: rgba(9, 12, 2, 0.7);
+            border: 2px solid var(--soft-periwinkle);
+            backdrop-filter: blur(15px);
+            color: var(--ghost-white);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .detail-item {
+            margin: 20px 0;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .detail-item label {
+            font-weight: bold;
+            color: var(--soft-periwinkle);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .detail-item p {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.3s;
+            color: black;
+            text-decoration: none;
+            background-color: var(--soft-periwinkle);
+        }
+        
+        .btn:hover {
+            background-color: var(--ghost-white);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--soft-periwinkle);
+            border: 1px solid var(--soft-periwinkle);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div>
+            <span style="color: var(--ghost-white);">Welcome, </span><span th:text="${user.username}"
+                style="font-weight: 800; color: var(--soft-periwinkle);">User</span>
+        </div>
+        <div>
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+            <a href="/address-book">Address Book</a>
+            <a href="/email">Email Mode</a>
+            <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+            <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;"></form>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Contact Details</h2>
+
+        <div class="detail-item">
+            <label>Name</label>
+            <p th:text="${contact.name}"></p>
+        </div>
+        <div class="detail-item">
+            <label>Email Address</label>
+            <p th:text="${contact.email}"></p>
+        </div>
+        <div class="detail-item">
+            <label>Contact Information / Notes</label>
+            <p th:text="${contact.contactInformation}"></p>
+        </div>
+
+        <div class="actions">
+            <a th:href="@{/email/compose(to=${contact.email})}" class="btn">Send Email</a>
+            <a th:href="@{/address-book/edit/{id}(id=${contact.id})}" class="btn btn-outline">Edit</a>
+            <a href="/address-book" class="btn btn-outline">Back</a>
+        </div>
+    </div>
+</body>
+
+</html>

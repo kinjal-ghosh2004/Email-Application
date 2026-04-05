@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>View Email - Email Application</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background: var(--gradient-bg);
+            background-size: cover;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--ghost-white);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(47, 1, 71, 0.8);
+            border-bottom: 2px solid var(--soft-periwinkle);
+            backdrop-filter: blur(10px);
+            width: 100vw;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .header a {
+            color: var(--ghost-white);
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .header a:hover {
+            background: var(--indigo);
+        }
+
+        .container {
+            margin-top: 100px;
+            margin-bottom: 50px;
+            padding: 30px;
+            background: rgba(9, 12, 2, 0.7);
+            border: 2px solid var(--soft-periwinkle);
+            backdrop-filter: blur(15px);
+            color: var(--ghost-white);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+        }
+
+        .container h2 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--soft-periwinkle);
+            padding-bottom: 10px;
+            color: var(--ghost-white);
+        }
+
+        .trail-container {
+            margin-bottom: 30px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        /* Custom scrollbar for trail */
+        .trail-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .trail-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px;
+        }
+        .trail-container::-webkit-scrollbar-thumb {
+            background: var(--soft-periwinkle); 
+            border-radius: 10px;
+        }
+
+        .email-bubble {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(200, 200, 200, 0.2);
+        }
+
+        .email-bubble.sent {
+            background: rgba(153, 132, 212, 0.15); /* Light indigo for sent */
+            border-color: var(--indigo);
+            margin-left: 20%;
+        }
+
+        .email-bubble.received {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: 20%;
+        }
+
+        .email-meta {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .email-subject {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--soft-periwinkle);
+        }
+
+        .email-body {
+            white-space: pre-wrap;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .reply-form {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--soft-periwinkle);
+            margin-top: 20px;
+        }
+
+        .reply-form h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--ghost-white);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--soft-periwinkle);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.3s;
+            color: black;
+            text-decoration: none;
+            background-color: var(--soft-periwinkle);
+        }
+        
+        .btn:hover {
+            background-color: var(--ghost-white);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: var(--soft-periwinkle);
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Ensure scroll container starts from bottom */
+        .trail-container {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+    </style>
+</head>
+
+<body onload="scrollToBottom()">
+    <div class="header">
+        <div>
+            <span style="color: var(--ghost-white);">Welcome, </span><span th:text="${user.username}"
+                style="font-weight: 800; color: var(--soft-periwinkle);">User</span>
+        </div>
+        <div>
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+            <a href="/address-book">Address Book</a>
+            <a href="/email">Email Mode</a>
+            <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+            <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;"></form>
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="/email" class="back-link">&larr; Back to Inbox</a>
+        <h2 th:text="'Email Thread: ' + ${currentEmail.subject}">Email Thread</h2>
+
+        <div class="trail-container" id="trailContainer">
+            <!-- Trail is sorted newest to oldest to work with flex column-reverse, or oldest to newest. ->
+            <!-- Controller orders by sentAt DESC. So index 0 is newest. Flex column-reverse puts index 0 at the bottom. -->
+            <div th:each="message : ${trail}" class="email-bubble" th:classappend="${message.senderEmail == user.email} ? 'sent' : 'received'">
+                <div class="email-meta">
+                    <span>
+                        <strong th:text="${message.senderEmail == user.email} ? 'You' : ${message.senderEmail}"></strong>
+                        to <span th:text="${message.receiverEmail == user.email} ? 'You' : ${message.receiverEmail}"></span>
+                    </span>
+                    <span th:text="${#temporals.format(message.sentAt, 'MMM dd, yyyy HH:mm')}"></span>
+                </div>
+                <div class="email-subject" th:if="${message.subject != null && !message.subject.isEmpty()}" th:text="${message.subject}"></div>
+                <div class="email-body" th:text="${message.body}"></div>
+            </div>
+        </div>
+
+        <div class="reply-form">
+            <h3>Send a Reply</h3>
+            <form th:action="@{/email/send}" th:object="${reply}" method="post">
+                <input type="hidden" th:field="*{receiverEmail}" />
+                <input type="hidden" th:field="*{parentEmailId}" />
+                <input type="hidden" th:field="*{subject}" />
+                
+                <div class="form-group">
+                    <label>To: <span style="font-weight: normal;" th:text="*{receiverEmail}"></span></label>
+                </div>
+
+                <div class="form-group">
+                    <textarea th:field="*{body}" rows="4" required placeholder="Type your reply here..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">Send Reply</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function scrollToBottom() {
+            var container = document.getElementById("trailContainer");
+            // Flex column-reverse handles this if the first element is the newest message. 
+            // In case it's not we might need to adjust, but setting scrollTop to 0 is the start of the scrollable area.
+            container.scrollTop = 0; 
+        }
+    </script>
+</body>
+
+</html>

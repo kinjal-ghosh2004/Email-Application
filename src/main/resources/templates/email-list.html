@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Mode - Email Application</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background: var(--gradient-bg);
+            background-size: cover;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--ghost-white);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(47, 1, 71, 0.8);
+            border-bottom: 2px solid var(--soft-periwinkle);
+            backdrop-filter: blur(10px);
+            width: 100vw;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .header a {
+            color: var(--ghost-white);
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .header a:hover {
+            background: var(--indigo);
+        }
+
+        .container {
+            margin-top: 100px;
+            padding: 30px;
+            background: rgba(9, 12, 2, 0.7);
+            border: 2px solid var(--soft-periwinkle);
+            backdrop-filter: blur(15px);
+            color: var(--ghost-white);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        .container h2 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--soft-periwinkle);
+            padding-bottom: 10px;
+            color: var(--ghost-white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-bar {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-form input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid var(--soft-periwinkle);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.3s;
+            color: black;
+            text-decoration: none;
+            background-color: var(--soft-periwinkle);
+        }
+        
+        .btn:hover {
+            background-color: var(--ghost-white);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--indigo);
+        }
+
+        th {
+            background-color: var(--dark-amethyst);
+            font-weight: bold;
+            color: var(--ghost-white);
+        }
+
+        tr {
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        tr:hover {
+            background-color: rgba(153, 132, 212, 0.2);
+        }
+
+        .unread {
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .alert-message {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            color: #2ecc71;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div>
+            <span style="color: var(--ghost-white);">Welcome, </span><span th:text="${user.username}"
+                style="font-weight: 800; color: var(--soft-periwinkle);">User</span>
+        </div>
+        <div>
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+            <a href="/address-book">Address Book</a>
+            <a href="/email">Email Mode</a>
+            <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+            <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;"></form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div th:if="${message}" class="alert-message">
+            <span th:text="${message}"></span>
+        </div>
+
+        <h2>
+            Inbox
+            <a href="/email/compose" class="btn">Compose Email</a>
+        </h2>
+
+        <div class="action-bar">
+            <form action="/email" method="get" class="search-form">
+                <input type="text" name="search" placeholder="Search by contact email or subject..." th:value="${searchQuery}">
+                <button type="submit" class="btn">Search</button>
+                <a href="/email" class="btn" style="background: transparent; color: var(--soft-periwinkle); border: 1px solid var(--soft-periwinkle);" th:if="${searchQuery != null && !searchQuery.isEmpty()}">Clear</a>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Subject</th>
+                    <th>Received At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="email : ${inboxEmails}" th:classappend="${!email.read} ? 'unread' : ''" th:onclick="|window.location.href='/email/view/${email.id}'|">
+                    <td th:text="${email.senderEmail}"></td>
+                    <td th:text="${email.subject == null || email.subject.isEmpty() ? '(No Subject)' : email.subject}"></td>
+                    <td th:text="${#temporals.format(email.sentAt, 'MMM dd, yyyy HH:mm')}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(inboxEmails)}">
+                    <td colspan="3" style="text-align: center; color: var(--soft-periwinkle); font-style: italic;">No emails found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

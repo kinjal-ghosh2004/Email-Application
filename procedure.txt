@@ -1,0 +1,111 @@
+# Procedure to Run the Project on a New System
+
+## 1. Prerequisites
+- **Java 17**: Ensure you have Java 17 (JDK) installed and configured in your system's PATH.
+- **PostgreSQL**: Install PostgreSQL (v14 or later recommended) and ensure the database server is running.
+- **Git** (optional, if you haven't cloned the repository yet).
+
+## 2. Database Setup
+1. Open your PostgreSQL terminal, pgAdmin, or preferred SQL client.
+2. Create a new database named `registration`:
+   ```sql
+   CREATE DATABASE registration;
+   ```
+
+## 3. Environment Variable Configuration
+To keep your sensitive credentials secure, the application uses environment variables. Before running the application, set the following environment variables in your system to configure your database and email server correctly:
+
+- `DB_USERNAME`: Your PostgreSQL username.
+- `DB_PASSWORD`: Your PostgreSQL password.
+- `MAIL_USERNAME`: Your SMTP email address (used for sending registration verification emails).
+- `MAIL_PASSWORD`: Your SMTP email App Password.
+
+**On Windows (Command Prompt):**
+```cmd
+set DB_USERNAME=your_db_user
+set DB_PASSWORD=your_db_password
+set MAIL_USERNAME=your_smtp_email
+set MAIL_PASSWORD=your_smtp_password
+```
+
+**On Windows (PowerShell):**
+```powershell
+$env:DB_USERNAME="your_db_user"
+$env:DB_PASSWORD="your_db_password"
+$env:MAIL_USERNAME="your_smtp_email"
+$env:MAIL_PASSWORD="your_smtp_password"
+```
+
+**On Linux/macOS:**
+```bash
+export DB_USERNAME="your_db_user"
+export DB_PASSWORD="your_db_password"
+export MAIL_USERNAME="your_smtp_email"
+export MAIL_PASSWORD="your_smtp_password"
+```
+
+## 4. Build and Run the Application
+The project includes a Maven wrapper, so you do not need to install Maven globally on your system.
+1. Open a terminal or command prompt.
+2. Navigate to the root directory of the project (where the `pom.xml` and `mvnw` files are located).
+3. Run the application using the included Maven wrapper:
+
+**On Windows:**
+```cmd
+mvnw.cmd spring-boot:run
+```
+
+**On Linux/macOS:**
+```bash
+./mvnw spring-boot:run
+```
+
+*(Note: The first time you run this command, Maven will download all necessary dependencies. This may take a few minutes depending on your internet connection.)*
+
+## 5. Access the Application
+Once the application has started successfully (you will see "Started DemoApplication in X seconds" in the console), open your web browser and navigate to the application URL:
+
+**http://localhost:8080**
+
+You can now use the application to Sign Up, verify your email, and Log In.
+
+## 6. Sprint-2 Features: Contact Management & Email Mode
+
+### Manage Contacts
+After logging in, click "Address Book" in the navigation header.
+
+- **View Contacts**: All your saved contacts are displayed in a table with Name, Email, and Contact Info columns.
+- **View Contact Details**: Click on a contact row to see the full details page (name, email, notes) along with a "Send Email" shortcut.
+- **Add New Contact**: Click "Add New Contact", fill in the form (Name, Email, Contact Information), and click "Save". You will be redirected to Email Mode.
+- **Edit a Contact**: Click the "Edit" button on a contact row, modify the fields, and click "Save". You will be redirected to Email Mode.
+- **Delete a Contact**: Click the "Delete" button on a contact row and confirm the prompt. You will be redirected to Email Mode.
+
+> Note: Each user has a separate, isolated list of contacts. User A cannot see User B's contacts.
+
+### Email Mode
+Click "Email Mode" in the navigation header.
+
+- **Inbox**: Displays a list of received emails showing Sender, Subject, and Date. Unread emails appear in bold.
+- **Search**: Use the search bar to filter emails by sender email or subject.
+- **Compose Email**: Click "Compose Email", enter the recipient's email address, subject, and message body, then click "Send Email".
+- **View Email Thread**: Click on any email in the inbox to view the full conversation trail (history). A reply form is available at the bottom.
+- **Reply**: From the email view, type a reply and click "Send Reply".
+
+> Cross-User Sync: When User A sends an email to User B's email address, User B will see that email in their inbox upon logging in.
+
+## 7. Running Tests
+The project includes automated integration tests for all Sprint-2 features.
+
+**Run all tests:**
+```
+.\mvnw.cmd test
+```
+
+**Run only Sprint-2 tests:**
+```
+.\mvnw.cmd test "-Dtest=Sprint2IntegrationTests"
+```
+
+Test cases cover:
+- TC-01 to TC-06: Contact CRUD operations and data isolation
+- TC-07 to TC-12: Email inbox display, search, compose, cross-user sync, threading, and reply
