@@ -55,6 +55,31 @@
         return;
       }
 
+      if (password.length < 8 || password.length > 12) {
+        alert("Password must be 8-12 characters long");
+        return;
+      }
+      if (!/[a-z]/.test(password)) {
+        alert("Password must include at least one lowercase letter");
+        return;
+      }
+      if (!/[A-Z]/.test(password)) {
+        alert("Password must include at least one uppercase letter");
+        return;
+      }
+      if (!/\d/.test(password)) {
+        alert("Password must include at least one number");
+        return;
+      }
+      if (!/[_@\-]/.test(password)) {
+        alert("Password must include at least one specific special character (_, @, -)");
+        return;
+      }
+      if (!/^[A-Za-z\d_@\-]+$/.test(password)) {
+        alert("Password must not contain spaces or invalid special characters (only _, @, - are allowed)");
+        return;
+      }
+
       if (password === confirmPassword) {
         fetch('/signup', {
           method: 'POST',
