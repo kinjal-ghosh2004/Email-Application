@@ -28,7 +28,7 @@
 
       <div class="inputbox">
         <ion-icon name="lock-closed-outline"></ion-icon>
-        <input type="password" id="password" name="password" required>
+        <input type="password" id="password" name="password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[_@\-])[A-Za-z\d_@\-]{8,12}$" title="Password must be 8-12 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character (_, @, -). No other special characters or spaces are allowed." required>
         <label for="">Password</label>
       </div>
       <div class="inputbox">
