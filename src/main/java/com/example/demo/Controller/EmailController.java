@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
+import jakarta.validation.Valid;
 
 import com.example.demo.Model.EmailMessage;
 import com.example.demo.Model.EmailMessageRepository;
@@ -63,9 +65,13 @@ public class EmailController {
     }
 
     @PostMapping("/send")
-    public String sendEmail(@ModelAttribute("email") EmailMessage email, Principal principal, RedirectAttributes redirectAttributes) {
+    public String sendEmail(@Valid @ModelAttribute("email") EmailMessage email, BindingResult bindingResult, Principal principal, Model model, RedirectAttributes redirectAttributes) {
         if (principal != null) {
             MyAppUser user = userRepository.findByEmail(principal.getName());
+            if (bindingResult.hasErrors()) {
+                model.addAttribute("user", user);
+                return "email-compose";
+            }
             email.setSenderId(user.getId());
             email.setSenderEmail(user.getEmail());
             email.setSentAt(LocalDateTime.now());

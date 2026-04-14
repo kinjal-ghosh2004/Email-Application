@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
+import jakarta.validation.Valid;
 
 import com.example.demo.Model.AddressBookContact;
 import com.example.demo.Model.AddressBookContactRepository;
@@ -43,9 +45,13 @@ public class AddressBookController {
     }
 
     @PostMapping("/save")
-    public String saveContact(@ModelAttribute("contact") AddressBookContact contact, Principal principal, RedirectAttributes redirectAttributes) {
+    public String saveContact(@Valid @ModelAttribute("contact") AddressBookContact contact, BindingResult bindingResult, Principal principal, Model model, RedirectAttributes redirectAttributes) {
         if (principal != null) {
             MyAppUser user = userRepository.findByEmail(principal.getName());
+            if (bindingResult.hasErrors()) {
+                model.addAttribute("user", user);
+                return "contact-form";
+            }
             contact.setUserId(user.getId());
             contactRepository.save(contact);
             redirectAttributes.addFlashAttribute("message", "Contact saved successfully.");
@@ -57,9 +63,11 @@ public class AddressBookController {
     @GetMapping("/{id}")
     public String viewContactDetails(@PathVariable("id") Long id, Model model, Principal principal) {
         if (principal != null) {
-            model.addAttribute("user", userRepository.findByEmail(principal.getName()));
+            MyAppUser user = userRepository.findByEmail(principal.getName());
+            model.addAttribute("user", user);
             AddressBookContact contact = contactRepository.findById(id).orElse(null);
             if (contact != null) {
+                if (!contact.getUserId().equals(user.getId())) return "redirect:/address-book";
                 model.addAttribute("contact", contact);
                 return "contact-details";
             }
@@ -70,9 +78,11 @@ public class AddressBookController {
     @GetMapping("/edit/{id}")
     public String editContactForm(@PathVariable("id") Long id, Model model, Principal principal) {
         if (principal != null) {
-            model.addAttribute("user", userRepository.findByEmail(principal.getName()));
+            MyAppUser user = userRepository.findByEmail(principal.getName());
+            model.addAttribute("user", user);
             AddressBookContact contact = contactRepository.findById(id).orElse(null);
             if (contact != null) {
+                if (!contact.getUserId().equals(user.getId())) return "redirect:/address-book";
                 model.addAttribute("contact", contact);
                 return "contact-form";
             }
@@ -81,10 +91,16 @@ public class AddressBookController {
     }
 
     @PostMapping("/update/{id}")
-    public String updateContact(@PathVariable("id") Long id, @ModelAttribute("contact") AddressBookContact updatedContact, Principal principal, RedirectAttributes redirectAttributes) {
+    public String updateContact(@PathVariable("id") Long id, @Valid @ModelAttribute("contact") AddressBookContact updatedContact, BindingResult bindingResult, Principal principal, Model model, RedirectAttributes redirectAttributes) {
         if (principal != null) {
+            MyAppUser user = userRepository.findByEmail(principal.getName());
+            if (bindingResult.hasErrors()) {
+                model.addAttribute("user", user);
+                return "contact-form";
+            }
             AddressBookContact existingContact = contactRepository.findById(id).orElse(null);
             if (existingContact != null) {
+                if (!existingContact.getUserId().equals(user.getId())) return "redirect:/address-book";
                 existingContact.setName(updatedContact.getName());
                 existingContact.setEmail(updatedContact.getEmail());
                 existingContact.setContactInformation(updatedContact.getContactInformation());
@@ -99,8 +115,12 @@ public class AddressBookController {
     @PostMapping("/delete/{id}")
     public String deleteContact(@PathVariable("id") Long id, Principal principal, RedirectAttributes redirectAttributes) {
         if (principal != null) {
-            contactRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("message", "Contact deleted successfully.");
+            MyAppUser user = userRepository.findByEmail(principal.getName());
+            AddressBookContact existingContact = contactRepository.findById(id).orElse(null);
+            if (existingContact != null && existingContact.getUserId().equals(user.getId())) {
+                contactRepository.deleteById(id);
+                redirectAttributes.addFlashAttribute("message", "Contact deleted successfully.");
+            }
             return "redirect:/email"; // Redirect to email mode as per requirement
         }
         return "redirect:/login";

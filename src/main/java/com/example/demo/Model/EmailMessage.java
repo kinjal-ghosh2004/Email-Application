@@ -2,6 +2,8 @@ package com.example.demo.Model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 public class EmailMessage {
@@ -13,10 +15,14 @@ public class EmailMessage {
     private Long senderId;
     private String senderEmail;
     
+    @NotBlank(message = "Receiver email is mandatory")
+    @Email(message = "Receiver email should be valid")
     private String receiverEmail;
 
+    @NotBlank(message = "Subject is mandatory")
     private String subject;
 
+    @NotBlank(message = "Body is mandatory")
     @Column(columnDefinition = "TEXT")
     private String body;
 

@@ -151,6 +151,7 @@ public class Sprint2IntegrationTests {
         AddressBookContact contact = new AddressBookContact();
         contact.setUserId(testUserA.getId());
         contact.setName("To Delete");
+        contact.setEmail("delete@test.com");
         contact = contactRepository.save(contact);
 
         // Process Contact -> Delete
@@ -323,5 +324,67 @@ public class Sprint2IntegrationTests {
         assertEquals(1, inboxB.size());
         assertEquals("Re: Original Subject", inboxB.get(0).getSubject());
         assertEquals("This is my reply!", inboxB.get(0).getBody());
+    }
+
+    // ============================================================
+    // TC-13: IDOR Protection
+    // ============================================================
+    @Test
+    @WithMockUser(username = "userb@test.com")
+    public void testContactIDORProtection_TC13() throws Exception {
+        // User A owns a contact
+        AddressBookContact contactA = new AddressBookContact();
+        contactA.setUserId(testUserA.getId());
+        contactA.setName("Contact A");
+        contactA.setEmail("a@example.com");
+        contactA = contactRepository.save(contactA);
+
+        // User B tries to view it
+        mockMvc.perform(get("/address-book/" + contactA.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/address-book"));
+                
+        // User B tries to edit it
+        mockMvc.perform(get("/address-book/edit/" + contactA.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/address-book"));
+
+        // User B tries to update it
+        mockMvc.perform(post("/address-book/update/" + contactA.getId())
+                .with(csrf())
+                .param("name", "Hacked Name")
+                .param("email", "hacked@example.com")
+                .param("contactInformation", "Hacked info"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/address-book"));
+
+        // User B tries to delete it
+        mockMvc.perform(post("/address-book/delete/" + contactA.getId()).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/email"));
+                
+        // Verify contact was NOT deleted
+        assertTrue(contactRepository.findById(contactA.getId()).isPresent(), "Contact should not be deleted by unauthorized user");
+        
+        // Verify contact was NOT updated
+        AddressBookContact reloaded = contactRepository.findById(contactA.getId()).get();
+        assertEquals("Contact A", reloaded.getName(), "Contact Name should not have been updated");
+    }
+
+    // ============================================================
+    // TC-14: Field Validation
+    // ============================================================
+    @Test
+    @WithMockUser(username = "usera@test.com")
+    public void testFieldValidation_TC14() throws Exception {
+        // Submit an invalid contact (empty name, invalid email)
+        mockMvc.perform(post("/address-book/save")
+                .with(csrf())
+                .param("name", "")
+                .param("email", "invalid-email")
+                .param("contactInformation", "info"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("contact-form"))
+                .andExpect(model().hasErrors());
     }
 }
